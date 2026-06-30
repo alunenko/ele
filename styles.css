@@ -13,10 +13,13 @@ article {
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+article, section { max-width: 100%; overflow-wrap: break-word; }
 h1 { font-size: 1.2rem; color: #555; }
+h2 { overflow-x: auto; max-width: 100%; }
 h2 a { color: #2c3e50; text-decoration: none; }
 h2 a:hover { text-decoration: underline; }
-figure img { max-width: 100%; height: auto; margin-top: 15px; border: 1px solid #ddd; }
+figure img { max-width: 100%; height: auto; margin-top: 15px; border: 1px solid #ddd;
+    display: flex; align-items: center; justify-content: center; }
 ul { list-style: none; padding: 0; }
 li { margin: 10px 0; padding: 10px; border-radius: 4px; transition: background 0.2s; }
 label { display: flex; align-items: center; cursor: pointer; width: 100%; }
