@@ -6,14 +6,76 @@
   <title>Testy Elektryk - ELE.02</title>
   <link rel="stylesheet" href="styles.css" type="text/css">
     <style>
-        body { padding-top: 90px; }
+        #bmc-wbtn { bottom: 88px !important; }
+        body {
+            padding-top: 90px; /* navigation panel */
+            padding-bottom: 70px; /* results panel */
+        }
         .bc li { display: inline-block; }
         .top-menu {
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; position: fixed; width: 100%; left: 0; padding: 0 20px; box-sizing: border-box; background: white; top: 0; z-index: 999; height: 90px;
         }
         .top-menu .bc { display: none; }
+
         @media (min-width: 768px) {
             .top-menu .bc { display: block; }
+        }
+
+        /*************/
+        /* Фіксований футер */
+        #quiz-stat-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            border-top: 2px solid #2c3e50;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+            z-index: 1000;
+            padding: 10px 0;
+        }
+
+        /* Контейнер для вирівнювання елементів в один рядок */
+        .stat-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap; /* Для гарного вигляду на мобільних */
+            gap: 15px;
+        }
+
+        .stat-item {
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-val {
+            font-weight: 700;
+        }
+        .stat-val.correct { color: #27ae60; }
+        .stat-val.wrong { color: #c0392b; }
+
+        /* Кнопка Reset вписується в загальний рядок */
+        #quiz-reset-btn {
+            padding: 6px 20px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        #quiz-reset-btn:hover {
+            background-color: #c0392b;
         }
     </style>
 </head>
@@ -36,6 +98,16 @@
         <li>></li>
         <li><a target="_blank" href="https://zawodowe.edu.pl/technik-elektryk/ELE.02/">ELE.02</a></li>
     </ul>
+</div>
+
+<div id="quiz-stat-footer">
+    <div class="stat-container">
+        <div class="stat-item">Poprawne: <span id="stat-correct" class="stat-val correct">0</span></div>
+        <div class="stat-item">Błędne: <span id="stat-wrong" class="stat-val wrong">0</span></div>
+        <div class="stat-item">Suma odpowiedzi: <span id="stat-total" class="stat-val">0</span></div>
+        <div class="stat-item">Skuteczność: <span id="stat-percent" class="stat-val">0%</span></div>
+        <button id="quiz-reset-btn">Reset</button>
+    </div>
 </div>
   
 <article id="q_1">
@@ -39345,34 +39417,92 @@
 </article>
 
 
-<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="62kX4sQF5E" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
-  <script>
+<script>
     document.addEventListener("DOMContentLoaded", () => {
-      document.body.addEventListener('change', (e) => {
-        if (e.target && e.target.type === 'radio') {
-          const selectedInput = e.target;
-          const currentUl = selectedInput.closest('.options-list');
-          
-          if (currentUl.classList.contains('disabled')) return;
 
-          const allInputsInQuestion = currentUl.querySelectorAll('input[type="radio"]');
-          
-          allInputsInQuestion.forEach(inp => {
-            const parentLi = inp.closest('li');
-            const isCorrect = inp.getAttribute('data-is-correct') === 'true';
-            
-            if (isCorrect) {
-              parentLi.classList.add('correct-choice');
-            } else if (inp === selectedInput) {
-              parentLi.classList.add('wrong-choice');
+        // Змінні стану лічильників
+        let correctCount = 0;
+        let wrongCount = 0;
+
+        const correctEl = document.getElementById('stat-correct');
+        const wrongEl = document.getElementById('stat-wrong');
+        const totalEl = document.getElementById('stat-total');
+        const percentEl = document.getElementById('stat-percent');
+        const resetBtn = document.getElementById('quiz-reset-btn');
+
+        // Функція оновлення інтерфейсу статистики
+        function updateStats() {
+            const total = correctCount + wrongCount;
+            correctEl.textContent = correctCount;
+            wrongEl.textContent = wrongCount;
+            totalEl.textContent = total;
+
+            if (total > 0) {
+                const percentage = Math.round((correctCount / total) * 100);
+                percentEl.textContent = `${percentage}%`;
+            } else {
+                percentEl.textContent = '0%';
             }
-            inp.disabled = true;
-          });
-
-          currentUl.classList.add('disabled');
         }
-      });
+
+        document.body.addEventListener('change', (e) => {
+            if (e.target && e.target.type === 'radio') {
+                const selectedInput = e.target;
+                const currentUl = selectedInput.closest('.options-list');
+
+                if (currentUl.classList.contains('disabled')) return;
+
+                const allInputsInQuestion = currentUl.querySelectorAll('input[type="radio"]');
+                const isUserCorrect = selectedInput.getAttribute('data-is-correct') === 'true';
+
+                // Змінюємо внутрішній стан лічильників
+                if (isUserCorrect) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                }
+
+                allInputsInQuestion.forEach(inp => {
+                    const parentLi = inp.closest('li');
+                    const isCorrect = inp.getAttribute('data-is-correct') === 'true';
+
+                    if (isCorrect) {
+                        parentLi.classList.add('correct-choice');
+                    } else if (inp === selectedInput) {
+                        parentLi.classList.add('wrong-choice');
+                    }
+                    inp.disabled = true;
+                });
+
+                currentUl.classList.add('disabled');
+                updateStats();
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            // 1. Скидаємо внутрішні змінні
+            correctCount = 0;
+            wrongCount = 0;
+            updateStats();
+
+            // 2. Знаходимо всі списки питань на сторінці і повертаємо до початкового стану
+            document.querySelectorAll('.options-list').forEach(ul => {
+                ul.classList.remove('disabled');
+
+                const inputs = ul.querySelectorAll('input[type="radio"]');
+                inputs.forEach(inp => {
+                    inp.disabled = false;
+                    inp.checked = false; // знімаємо виділення з кружечка
+
+                    const parentLi = inp.closest('li');
+                    if (parentLi) {
+                        parentLi.classList.remove('correct-choice', 'wrong-choice'); // прибираємо кольори
+                    }
+                });
+            });
+        });
     });
-  </script>
+</script>
+<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="62kX4sQF5E" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 </body>
 </html>
