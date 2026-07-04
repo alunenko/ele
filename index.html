@@ -5,6 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zawodowe.edu.pl Technik-elektryk</title>
     <link rel="stylesheet" href="styles.css" type="text/css">
+    <style>
+        p { margin: 0; padding: 0; }
+        /* Скидаємо стандартну нумерацію та налаштовуємо лічильник */
+        ol.nested-list, ol.nested-list ol {
+            list-style-type: none;
+            counter-reset: item;
+            padding-left: 20px;
+        }
+        ol.nested-list li {
+            counter-increment: item;
+            margin: 4px 0;
+        }
+        /* Генеруємо номери типу 1.1 / 1.1.1 перед текстом */
+        ol.nested-list li::before {
+            content: counters(item, ".") " ";
+            font-weight: bold;
+            color: #333;
+            margin-right: 5px;
+        }
+    </style>
 </head>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-JCNNN3X025"></script>
@@ -16,12 +36,29 @@
     gtag('config', 'G-JCNNN3X025');
 </script>
 <body>
-<h1><a href="https://zawodowe.edu.pl/technik-elektryk">Zawodowe.edu.pl Technik-elektryk</a></h1>
-  <p style="display: flex; justify-content: space-between; align-items: center;">
-      <a href="ele02.html" style="width: 80%">ELE.02 - Montaż, uruchamianie i konserwacja instalacji, maszyn i urządzeń elektrycznych (Baza pytan od 30.06.2026)</a>
-      <a href="https://drive.google.com/file/d/1SqyS3WNHd4rg-fD4mgsPP4MWh11dSWMo/view?usp=drive_link">PDF (111Mb)</a>
-  </p>
-  <p style="color: gray; cursor: not-allowed;">ELE.05 - Eksploatacja maszyn, urządzeń i instalacji elektrycznych</p>
+<ol>
+    <li>
+        <a target="_blank" href="https://zawodowe.edu.pl">Zawodowe.edu.pl</a>
+        <ol>
+            <li>
+                <a target="_blank" href="https://zawodowe.edu.pl/technik-elektryk">Technik-elektryk</a>
+                <ol>
+                    <li>
+                        <p style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>
+                                <a href="ele02.html" style="width: 80%">ELE.02 - Montaż, uruchamianie i konserwacja instalacji, maszyn i urządzeń elektrycznych (Baza pytan od 30.06.2026)</a><br/><br/>
+                                <a target="_blank" href="https://zawodowe.edu.pl/technik-elektryk/ELE.02/">(Source)</a>
+                            </span>
+                            <a href="https://drive.google.com/file/d/1SqyS3WNHd4rg-fD4mgsPP4MWh11dSWMo/view?usp=drive_link">PDF (111Mb)</a>
+                        </p>
+                    </li>
+                    <li style="color: gray; cursor: not-allowed;">ELE.05 - Eksploatacja maszyn, urządzeń i instalacji elektrycznych</li>
+                </ol>
+            </li>
+        </ol>
+    </li>
+</ol>
+
 
   <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="62kX4sQF5E" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 </body>
