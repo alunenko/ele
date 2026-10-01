@@ -12,7 +12,6 @@ article {
     margin-bottom: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    scroll-margin-top: 115px;
 }
 article, section { max-width: 100%; overflow-wrap: break-word; }
 h1 { font-size: 1.2rem; color: #555; }
