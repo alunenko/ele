@@ -39664,6 +39664,62 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
 
+        // ==========================================
+        // 1. ЛОГІКА СКРОЛУ ТА НАВІГАЦІЇ ПО ЯКОРЯХ
+        // ==========================================
+        const HEADER_OFFSET = 80; // Відступ під хедер у пікселях
+        const MAX_SMOOTH_DISTANCE = 1500; // Максимальна відстань для плавного скролу
+
+        function scrollToTarget(target) {
+            if (!target) return;
+
+            const elementTop = target.getBoundingClientRect().top;
+            const absoluteTop = elementTop + window.pageYOffset;
+            const targetPosition = absoluteTop - HEADER_OFFSET;
+            const distance = Math.abs(elementTop);
+
+            window.scrollTo({
+                top: targetPosition,
+                behavior: distance > MAX_SMOOTH_DISTANCE ? 'auto' : 'smooth'
+            });
+        }
+
+        // Обробка прямого заходу на сторінку з хешем у URL (наприклад, #q_754)
+        if (window.location.hash) {
+            const initialTarget = document.querySelector(window.location.hash);
+            if (initialTarget) {
+                // Маленький таймаут, щоб браузер встиг повністю відмалювати розмітку
+                setTimeout(() => {
+                    const targetPosition = initialTarget.getBoundingClientRect().top + window.pageYOffset - HEADER_OFFSET;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'auto' // Одразу стрибаємо без анімації при завантаженні
+                    });
+                }, 10);
+            }
+        }
+
+        // Обробка кліків по посиланнях-якорях на сторінці
+        document.body.addEventListener('click', (e) => {
+            const link = e.target.closest('a[href^="#"]');
+            if (!link) return;
+
+            const targetId = link.getAttribute('href');
+            if (targetId === '#') return;
+
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                e.preventDefault();
+                scrollToTarget(targetElement);
+                history.pushState(null, null, targetId); // Оновлюємо URL без перезавантаження
+            }
+        });
+
+
+        // ==========================================
+        // 2. ЛОГІКА ТЕСТУ ТА СТАТИСТИКИ
+        // ==========================================
+
         // Змінні стану лічильників
         let correctCount = 0;
         let wrongCount = 0;
@@ -39723,28 +39779,30 @@
             }
         });
 
-        resetBtn.addEventListener('click', () => {
-            // 1. Скидаємо внутрішні змінні
-            correctCount = 0;
-            wrongCount = 0;
-            updateStats();
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                // 1. Скидаємо внутрішні змінні
+                correctCount = 0;
+                wrongCount = 0;
+                updateStats();
 
-            // 2. Знаходимо всі списки питань на сторінці і повертаємо до початкового стану
-            document.querySelectorAll('.options-list').forEach(ul => {
-                ul.classList.remove('disabled');
+                // 2. Знаходимо всі списки питань на сторінці і повертаємо до початкового стану
+                document.querySelectorAll('.options-list').forEach(ul => {
+                    ul.classList.remove('disabled');
 
-                const inputs = ul.querySelectorAll('input[type="radio"]');
-                inputs.forEach(inp => {
-                    inp.disabled = false;
-                    inp.checked = false; // знімаємо виділення з кружечка
+                    const inputs = ul.querySelectorAll('input[type="radio"]');
+                    inputs.forEach(inp => {
+                        inp.disabled = false;
+                        inp.checked = false; // знімаємо виділення з кружечка
 
-                    const parentLi = inp.closest('li');
-                    if (parentLi) {
-                        parentLi.classList.remove('correct-choice', 'wrong-choice'); // прибираємо кольори
-                    }
+                        const parentLi = inp.closest('li');
+                        if (parentLi) {
+                            parentLi.classList.remove('correct-choice', 'wrong-choice'); // прибираємо кольори
+                        }
+                    });
                 });
             });
-        });
+        }
     });
 </script>
 <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="62kX4sQF5E" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
