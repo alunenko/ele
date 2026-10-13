@@ -103,6 +103,52 @@
         [id] {
             scroll-margin-top: 115px; /* HEADER_OFFSET */
         }
+
+        /* Оверлей для перегляду картинок */
+        .img-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px); /* Гарне розмиття фону */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            cursor: zoom-out;
+        }
+
+        /* Коли модалка активна */
+        .img-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Картинка всередині модалки */
+        .img-modal-overlay img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.25s ease;
+            transform: scale(0.95);
+        }
+
+        .img-modal-overlay.active img {
+            transform: scale(1);
+        }
+
+        /* Додаємо курсор-лупу для всіх картинок у питаннях */
+        .options-list img,
+        .question img {
+            cursor: zoom-in;
+        }
     </style>
 </head>
 <!-- Google tag (gtag.js) -->
@@ -115,6 +161,9 @@
     gtag('config', 'G-T7WHEL8FFP');
 </script>
 <body>
+<div id="img-modal" class="img-modal-overlay">
+    <img src="" alt="Preview">
+</div>
 <div class="top-menu">
     <a href="./" title="Home (back)" style="font-size:40px; text-decoration: none; cursor: pointer;">⬅️</a>
     <ul class="bc">
@@ -39723,39 +39772,51 @@
 
 
 <script>
-    const HEADER_OFFSET = 115; // Відступ під хедер у пікселях
-    const MAX_SMOOTH_DISTANCE = 1500; // Максимальна відстань для плавного скролу
+    const HEADER_OFFSET = 115;
+    const MAX_SMOOTH_DISTANCE = 1500;
 
-    function imgFullscreen(e) {
-        const preview = e.target.closest('img');
+    // Захист від подвійного спрацьовування (lock-таймер)
+    let isFullscreenTransitioning = false;
 
-        // 1. Якщо ми ВЖЕ у Fullscreen — будь-який клік виходить із нього
-        if (document.fullscreenElement) {
+    // Функція відкриття/закриття модалки
+    function toggleImgModal(e) {
+        const modal = document.getElementById('img-modal');
+        const modalImg = modal ? modal.querySelector('img') : null;
+        if (!modal || !modalImg) return false;
+
+        const clickedImg = e.target.closest('img');
+
+        // 1. Якщо модалка вже відкрита — закриваємо її при кліку куди завгодно
+        if (modal.classList.contains('active')) {
             e.preventDefault();
             e.stopPropagation();
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            }
+            modal.classList.remove('active');
             return true;
         }
 
-        // 2. Якщо клікнули по картинці — блокуємо label і відкриваємо Fullscreen
-        if (preview) {
+        // 2. Якщо клікнули по картинці (і це не картинка всередині самої модалки)
+        if (clickedImg && !clickedImg.closest('#img-modal')) {
             e.preventDefault();
             e.stopPropagation();
 
-            if (preview.requestFullscreen) {
-                preview.requestFullscreen();
-            } else if (preview.webkitRequestFullscreen) {
-                preview.webkitRequestFullscreen();
-            }
+            modalImg.src = clickedImg.src;
+            modalImg.alt = clickedImg.alt || 'Preview';
+            modal.classList.add('active');
             return true;
         }
 
         return false;
     }
+
+    // Закриття модального вікна клавішею Esc (бонус для зручності)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('img-modal');
+            if (modal && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+            }
+        }
+    });
 
     function anchorClickScroll(e) {
         const link = e.target.closest('a[href^="#"]');
@@ -39786,14 +39847,6 @@
         });
     }
 
-    // БОНУС: Блокування перемикання radio на рівні Capturing (Захоплення)
-    // Це перехоплює клік на картинці ЩЕ ДО ТОГО, як <label> встигне активувати radio
-    document.addEventListener('click', (e) => {
-        if (e.target.closest('img')) {
-            e.preventDefault();
-        }
-    }, true); // true = useCapture (захоплення)
-
     document.addEventListener("DOMContentLoaded", () => {
         // Вимикаємо авто-скролл браузера для коректного прямого заходу
         if ('scrollRestoration' in history) {
@@ -39813,9 +39866,17 @@
             }
         });
 
+        // ПРАВИЛЬНЕ БЛОКУВАННЯ LABEL:
+        // Якщо клікнули по картинці всередині label — забороняємо label тиснути на radio
+        document.body.addEventListener('click', (e) => {
+            if (e.target.closest('img') && e.target.closest('label')) {
+                e.preventDefault();
+            }
+        });
+
         // Обробка кліків по картинках та якорях
         document.body.addEventListener('click', (e) => {
-            if (imgFullscreen(e)) return;
+            if (toggleImgModal(e)) return;
             anchorClickScroll(e);
         });
 
@@ -39849,8 +39910,8 @@
         }
 
         document.body.addEventListener('change', (e) => {
-            // Захисний заслон: якщо активний fullscreen, ігноруємо будь-які зміни radio
-            if (document.fullscreenElement) return;
+            // Якщо зараз відкритий fullscreen або йде перехід — ігноруємо радіо
+            if (document.fullscreenElement || isFullscreenTransitioning) return;
 
             if (e.target && e.target.type === 'radio') {
                 const selectedInput = e.target;
