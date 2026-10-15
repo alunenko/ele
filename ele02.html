@@ -149,6 +149,22 @@
         .question img {
             cursor: zoom-in;
         }
+
+        figure {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: zoom-in;
+            margin: 0 auto;
+        }
+
+        figure img {
+            border: 0 none;
+        }
+
+        figcaption {
+            width: 100%;
+        }
     </style>
 </head>
 <!-- Google tag (gtag.js) -->
@@ -39902,7 +39918,8 @@
         const modalImg = modal ? modal.querySelector('img') : null;
         if (!modal || !modalImg) return false;
 
-        const clickedImg = e.target.closest('img');
+        // Шукаємо найближчий тег figure замість img
+        const clickedFigure = e.target.closest('figure');
 
         // 1. Якщо модалка вже відкрита — закриваємо її при кліку куди завгодно
         if (modal.classList.contains('active')) {
@@ -39912,13 +39929,16 @@
             return true;
         }
 
-        // 2. Якщо клікнули по картинці (і це не картинка всередині самої модалки)
-        if (clickedImg && !clickedImg.closest('#img-modal')) {
+        // 2. Якщо клікнули по figure (і це не елемент всередині самої модалки)
+        if (clickedFigure && !clickedFigure.closest('#img-modal')) {
+            const img = clickedFigure.querySelector('img');
+            if (!img) return false; // Якщо у figure немає картинки
+
             e.preventDefault();
             e.stopPropagation();
 
-            modalImg.src = clickedImg.src;
-            modalImg.alt = clickedImg.alt || 'Preview';
+            modalImg.src = img.src;
+            modalImg.alt = img.alt || 'Preview';
             modal.classList.add('active');
             return true;
         }
